@@ -24,7 +24,7 @@ class MinConflictsAlgorithm:
     def __init__(self, n):
         self.n = n
         self.board = [[0 for _ in range(n)] for _ in range(n)]
-        self.step = 0
+        self.steps = 0
 
     # region conflicts calc
     def get_conflicts(self, row, col):
@@ -78,7 +78,7 @@ class MinConflictsAlgorithm:
             self.board[i][j] = 0
             i, j = self.get_best_position()
             self.board[i][j] = 1
-            self.step += 1
+            self.steps += 1
 
         return
 
@@ -101,7 +101,7 @@ class MinConflictsAlgorithm:
             for j in range(self.n):
                 if self.board[i][j] == 1:
                     conflicts_sum += self.get_conflicts(i, j)
-        return conflicts_sum == 0 or self.step == MinConflictsAlgorithm.max_steps
+        return conflicts_sum == 0 or self.steps == MinConflictsAlgorithm.max_steps
 
     def get_most_conflicted_queen(self):
         """running time is O(n^2)"""
@@ -139,7 +139,7 @@ class MinConflictsAlgorithm:
             for j in range(self.n):
                 print('Q' if self.board[i][j] == 1 else '.', end=' ')
             print()
-        print("nuber of steps: ", self.step)
+        print("nuber of steps: ", self.steps)
         conflicts = 0
         for i in range(self.n):
             for j in range(self.n):
@@ -155,6 +155,6 @@ if __name__ == '__main__':
         min_conflicts = MinConflictsAlgorithm(n)
         min_conflicts.solve()
         min_conflicts.print_solution()
-        count += min_conflicts.step
+        count += min_conflicts.steps
 
     print("average number of steps: ", count / 10)
