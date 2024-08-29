@@ -128,7 +128,6 @@ class GeneticAlgorithmNQueens:
             if self.fitness(best_board) == self.n * (self.n - 1) // 2:
                 self.best_solution = best_board
                 self.generations = generation + 1
-                print(f"Solution found in {self.generations} generations., N = {self.n}")
                 return True
 
         self.best_solution = max(self.population, key=self.fitness)
