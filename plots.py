@@ -14,11 +14,66 @@ from MIN_CONFLICTS_algorithm import MinConflictsAlgorithm
 import Genetic_algorithm
 from naive_algorithm import NaiveAlgorithm
 
-sizes = [4, 8, 12, 16]
-max_step_available = [10, 20, 50, 70, 90, 100, 120, 130, 150, 180, 200]
+sizes = range(4, 17,4)
+max_step_available = range(10, 400, 20)
 runs_per_n = 100
 
 
+def plot_running_time_per_n_for_genetic_min_conflicts():
+    """
+    Plots the average running time of the Min Conflicts Algorithm for various N values and max steps.
+    X-axis: number of max steps available.
+    Y-axis: running time (average) for each N and max steps combination.
+    Each color represents a different N value.
+    """
+    # Dictionary to store running time results for each N and max steps
+    results = defaultdict(list)
+
+    # Iterate over each N value
+    for n in sizes:
+        # Iterate over each maximum steps value
+        for max_steps in max_step_available:
+            print(f"Processing N={n}, Max Steps={max_steps}")
+            running_times_sum = 0
+
+            # Run the algorithm `runs_per_n` times to average the results
+            for _ in range(runs_per_n):
+                # Initialize Min Conflicts Algorithm
+                alg = MinConflictsAlgorithm(n, limit_steps=False, max_steps=max_steps)
+
+                # Measure the time taken to solve
+                start = time.time()
+                alg.solve()  # Solve method should handle the max steps internally
+                end = time.time()
+
+                # Accumulate the running time
+                running_times_sum += end - start
+
+            # Calculate the average running time for the current configuration
+            running_time_avg = running_times_sum / runs_per_n
+
+            # Store the result
+            results[n].append((max_steps, running_time_avg))
+
+    # Plotting the results
+    plt.figure(figsize=(12, 6))
+
+    # Iterate over the results to plot each N value with different colors
+    for n, data in results.items():
+        # Extract max steps and corresponding average running times
+        x_vals = [max_steps for max_steps, _ in data]
+        y_vals = [running_time_avg for _, running_time_avg in data]
+
+        # Plot with labels for each N
+        plt.plot(x_vals, y_vals, marker='o', label=f'N = {n}')
+
+    # Setting plot labels and legend
+    plt.xlabel("Max Steps Available")
+    plt.ylabel("Average Running Time (s)")
+    plt.title("Average Running Time per N and Max Steps for Min Conflicts Algorithm")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 def steps_success_plot_for_min_conflicts():
     """
     X axis: number of steps
@@ -52,38 +107,13 @@ def steps_success_plot_for_min_conflicts():
     plt.show()
 
 
-def plot_running_time_per_n_for_genetic_min_conflicts():
-    ns = range(4, 17)
-    times = []
-
-    for n in ns:
-        print(f"Processing N={n}")
-        running_times_sum = 0
-        for i in range(runs_per_n):
-            alg = MinConflictsAlgorithm(n, limit_steps=False)
-            start = time.time()
-            alg.solve()
-            end = time.time()
-            running_times_sum += end - start
-        times.append(running_times_sum / runs_per_n)
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(ns, times, marker='o', linestyle='-', color='b', label='Average Running Time')
-    plt.xlabel('N')
-    plt.ylabel('Average Running Time (seconds)')
-    plt.title('MIN-CONFLICTS:    Running Time vs. N for Genetic Min Conflicts Algorithm')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-    print(times)
 
 
 
-sizes = [4, 8]
 mutation_rate = 0.1
 max_generations = 200
 runs_per_n = 10
-population_sizes = [100, 150]
+population_sizes = range(10, 210, 20)
 
 
 def genetic_algorithm_results():
@@ -109,15 +139,13 @@ def genetic_algorithm_results():
             results[population_size].append((n, running_times_sum / runs_per_n, conflicts_sum / runs_per_n))
 
     return results
-
-
-def plot_genetic_algorithm_results(results):
+def plot_genetic_algorithm_results():
     """
     Plots the results of the genetic algorithm:
     1. Running time vs. population size for different N values.
     2. Conflicts vs. population size for different N values.
     """
-
+    results = genetic_algorithm_results()
     # Extract all unique N values to use in the plot
     N_values = sorted(set(n for pop_size in results for n, _, _ in results[pop_size]))
 
@@ -153,13 +181,8 @@ def plot_genetic_algorithm_results(results):
     plt.grid(True)
     plt.show()
 
-
-# Generate results by running the genetic algorithm
-results = genetic_algorithm_results()
-
-# Plot the results
-plot_genetic_algorithm_results(results)
-
-
-
+start = time.time()
+steps_success_plot_for_min_conflicts()
+plot_running_time_per_n_for_genetic_min_conflicts()
 plot_genetic_algorithm_results()
+print("Total time in seconds:", time.time() - start)

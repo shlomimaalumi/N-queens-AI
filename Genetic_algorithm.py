@@ -54,6 +54,7 @@ class GeneticAlgorithmNQueens:
     def fitness(self, board):
         """
         Calculates the fitness of a board configuration.
+        when the value is bigger, the board is better.
 
         Parameters:
         board (list): A board configuration.
@@ -76,7 +77,7 @@ class GeneticAlgorithmNQueens:
         Returns:
         list: A list containing two parent boards.
         """
-        tournament_size = 5
+        tournament_size = n // 2 #TODO
         return [max(random.sample(self.population, tournament_size), key=self.fitness) for _ in range(2)]
 
     def crossover(self, parent1, parent2):
@@ -103,7 +104,7 @@ class GeneticAlgorithmNQueens:
         Returns:
         list: The mutated board configuration.
         """
-        if random.random() < self.mutation_rate:
+        if random.random() < self.mutation_rate: #TODO plot graph on the mutation rate
             board[random.randint(0, self.n - 1)] = random.randint(0, self.n - 1)
         return board
 
@@ -145,11 +146,9 @@ class GeneticAlgorithmNQueens:
 
 
 if __name__ == '__main__':
-    n = 8
-    population_size = 100
+    n = 4
+    population_size = 10
     mutation_rate = 0.1
-    max_generations = 1000
-    genetic_algorithm = GeneticAlgorithmNQueens(n, population_size, mutation_rate, max_generations)
-    genetic_algorithm.evolve()
-    print(genetic_algorithm.best_solution)
-    print(genetic_algorithm.fitness(genetic_algorithm.best_solution))
+    max_generations = 200
+    sol = GeneticAlgorithmNQueens(n, population_size, mutation_rate, max_generations).solve()
+    print(sol.best_solution)
