@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
 import time
 import random
@@ -6,254 +8,185 @@ import psutil
 
 from Genetic_algorithm import GeneticAlgorithmNQueens
 from MIN_CONFLICTS_algorithm import MinConflictsAlgorithm
+import Genetic_algorithm
+from naive_algorithm import NaiveAlgorithm
 
 
-def measure_time_for_algorithms(n, max_steps=1000):
-    min_conflicts_time = 0
-    genetic_algorithm_time = 0
-
-    # Measure time for MinConflictsAlgorithm
-    start = time.time()
-    min_conflicts = MinConflictsAlgorithm(n)
-    min_conflicts.solve()
-    min_conflicts_time = time.time() - start
-
-    # Measure time for GeneticAlgorithmNQueens
-    start = time.time()
-    genetic_algorithm = GeneticAlgorithmNQueens(n)
-    genetic_algorithm.evolve()
-    genetic_algorithm_time = time.time() - start
-
-    return min_conflicts_time, genetic_algorithm_time
+class solution:
+    def __init__(self, time, conflicts):
+        self.time = time
+        self.conflicts = conflicts
+        # self.StepsOrGenerations = StepsOrGenerations
 
 
-def measure_success_rate(n, trials=10):
-    min_conflicts_success = 0
-    genetic_algorithm_success = 0
-
-    for _ in range(trials):
-        min_conflicts = MinConflictsAlgorithm(n)
-        min_conflicts.solve()
-        if min_conflicts.termination_criteria():
-            min_conflicts_success += 1
-
-        genetic_algorithm = GeneticAlgorithmNQueens(n)
-        if genetic_algorithm.evolve():
-            genetic_algorithm_success += 1
-
-    return min_conflicts_success / trials, genetic_algorithm_success / trials
+genetic_algorithm_dict = defaultdict(list)
+min_conflicts_algorithm_dict = defaultdict(list)
+naive_algorithm_dict = defaultdict(list)
+sizes = [4, 8, 12, 16]
+max_step_avialable = [10, 20, 50, 100, 120, 150, 180, 200]
+population_size_avialable = [50, 100]
+generations_avialable = [700, 1000]
 
 
-def measure_iterations_for_algorithms(n, max_steps=1000):
-    min_conflicts_iterations = 0
-    genetic_algorithm_iterations = 0
+def steps_success_plot_for_min_conflicts():
+    """
+    X axis: number of steps
+    Y axis: conflicts in average for the N and the number of steps
+    color for each N
+    """
+    plt.figure(figsize=(10, 6))
 
-    min_conflicts = MinConflictsAlgorithm(n)
-    min_conflicts.solve()
-    min_conflicts_iterations = min_conflicts.steps
+    for n in sizes:
+        x_vals = []
+        y_vals = []
 
-    genetic_algorithm = GeneticAlgorithmNQueens(n)
-    genetic_algorithm.evolve()
-    genetic_algorithm_iterations = genetic_algorithm.generations
+        for max_steps in max_step_avialable:
+            conflicts_sum = 0
+            for _ in range(10):
+                min_conflicts_algorithm = MinConflictsAlgorithm(n, max_steps)
+                min_conflicts_algorithm.solve()
+                conflicts_sum += min_conflicts_algorithm.get_all_conflicts()
 
-    return min_conflicts_iterations, genetic_algorithm_iterations
+            conflicts_avg = conflicts_sum / 10
+            x_vals.append(max_steps)
+            y_vals.append(conflicts_avg)
 
+        plt.plot(x_vals, y_vals, label=f'N={n}', marker='o')
 
-def measure_fitness_progress(n, population_size=50, mutation_rate=0.05, max_generations=1000):
-    genetic_algorithm = GeneticAlgorithmNQueens(n, population_size, mutation_rate, max_generations)
-    fitness_progress = []
-
-    for generation in range(max_generations):
-        genetic_algorithm.evolve()
-        fitness_progress.append(genetic_algorithm.fitness(genetic_algorithm.best_solution))
-
-    return fitness_progress
-
-
-def measure_conflicts_progress(n):
-    min_conflicts = MinConflictsAlgorithm(n)
-    conflicts_progress = []
-
-    while not min_conflicts.termination_criteria():
-        i, j = min_conflicts.get_most_conflicted_queen()
-        min_conflicts.board[i][j] = 0
-        i, j = min_conflicts.get_best_position()
-        min_conflicts.board[i][j] = 1
-        conflicts_progress.append(sum(min_conflicts.get_conflicts(i, j) for i in range(n) for j in range(n)))
-
-    return conflicts_progress
-
-
-def measure_memory_usage_for_algorithms(n):
-    process = psutil.Process()
-    min_conflicts_memory = 0
-    genetic_algorithm_memory = 0
-
-    start_memory = process.memory_info().rss / 1024 / 1024  # Memory usage in MB
-
-    min_conflicts = MinConflictsAlgorithm(n)
-    min_conflicts.solve()
-    min_conflicts_memory = process.memory_info().rss / 1024 / 1024 - start_memory
-
-    genetic_algorithm = GeneticAlgorithmNQueens(n)
-    genetic_algorithm.evolve()
-    genetic_algorithm_memory = process.memory_info().rss / 1024 / 1024 - start_memory
-
-    return min_conflicts_memory, genetic_algorithm_memory
-
-
-def measure_population_size_effect(n, population_sizes):
-    average_fitness_scores = []
-
-    for population_size in population_sizes:
-        genetic_algorithm = GeneticAlgorithmNQueens(n, population_size=population_size)
-        genetic_algorithm.evolve()
-        average_fitness_scores.append(genetic_algorithm.fitness(genetic_algorithm.best_solution))
-
-    return average_fitness_scores
-
-
-def measure_convergence_comparison(n):
-    min_conflicts = MinConflictsAlgorithm(n)
-    genetic_algorithm = GeneticAlgorithmNQueens(n)
-
-    min_conflicts_conflicts_progress = []
-    genetic_algorithm_fitness_progress = []
-
-    while not min_conflicts.termination_criteria():
-        i, j = min_conflicts.get_most_conflicted_queen()
-        min_conflicts.board[i][j] = 0
-        i, j = min_conflicts.get_best_position()
-        min_conflicts.board[i][j] = 1
-        min_conflicts_conflicts_progress.append(
-            sum(min_conflicts.get_conflicts(i, j) for i in range(n) for j in range(n)))
-
-    for generation in range(genetic_algorithm.max_generations):
-        if genetic_algorithm.evolve():
-            genetic_algorithm_fitness_progress.append(genetic_algorithm.fitness(genetic_algorithm.best_solution))
-
-    plt.figure(figsize=(12, 8))
-    plt.plot(range(len(min_conflicts_conflicts_progress)), min_conflicts_conflicts_progress,
-             label='Min-Conflicts Conflicts')
-    plt.plot(range(len(genetic_algorithm_fitness_progress)), genetic_algorithm_fitness_progress,
-             label='Genetic Algorithm Fitness')
-    plt.xlabel('Iteration or Generation')
-    plt.ylabel('Progress Metric')
-    plt.title('Convergence Rate Comparison')
+    plt.xlabel('Number of Steps')
+    plt.ylabel('Average Number of Conflicts')
+    plt.title('Average Number of Conflicts vs. Number of Steps')
     plt.legend()
     plt.grid(True)
     plt.show()
 
 
-# Main code to generate plots
-n_values = list(range(4, 15))  # Example range
-population_sizes = [20, 50, 100, 200]
-
-# Running Time vs. Number of Queens
-min_conflicts_times = []
-genetic_algorithm_times = []
-
-for n in n_values:
-    min_time, gen_time = measure_time_for_algorithms(n)
-    min_conflicts_times.append(min_time)
-    genetic_algorithm_times.append(gen_time)
-
-plt.figure(figsize=(10, 6))
-plt.plot(n_values, min_conflicts_times, label='Min-Conflicts Algorithm')
-plt.plot(n_values, genetic_algorithm_times, label='Genetic Algorithm')
-plt.xlabel('Number of Queens (N)')
-plt.ylabel('Execution Time (seconds)')
-plt.title('Running Time vs. Number of Queens')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-# Success Rate vs. Number of Queens
-success_rates = {'Min-Conflicts': [], 'Genetic Algorithm': []}
-
-for n in n_values:
-    min_success, gen_success = measure_success_rate(n)
-    success_rates['Min-Conflicts'].append(min_success)
-    success_rates['Genetic Algorithm'].append(gen_success)
-
-plt.figure(figsize=(10, 6))
-plt.plot(n_values, success_rates['Min-Conflicts'], label='Min-Conflicts Algorithm')
-plt.plot(n_values, success_rates['Genetic Algorithm'], label='Genetic Algorithm')
-plt.xlabel('Number of Queens (N)')
-plt.ylabel('Success Rate')
-plt.title('Success Rate vs. Number of Queens')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-# Number of Iterations vs. Number of Queens
-iterations = {'Min-Conflicts': [], 'Genetic Algorithm': []}
-
-for n in n_values:
-    min_iterations, gen_iterations = measure_iterations_for_algorithms(n)
-    iterations['Min-Conflicts'].append(min_iterations)
-    iterations['Genetic Algorithm'].append(gen_iterations)
-
-plt.figure(figsize=(10, 6))
-plt.plot(n_values, iterations['Min-Conflicts'], label='Min-Conflicts Algorithm')
-plt.plot(n_values, iterations['Genetic Algorithm'], label='Genetic Algorithm')
-plt.xlabel('Number of Queens (N)')
-plt.ylabel('Number of Iterations')
-plt.title('Number of Iterations vs. Number of Queens')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-# Fitness Value vs. Generation (For Genetic Algorithm Only)
-for n in [8]:  # Example value for demonstration
-    fitness_progress = measure_fitness_progress(n)
+def plot_success_plot_for_genetic_algorithm():
+    """
+    X axis: number of generations
+    Y axis: conflicts in average for the N and the number of generations
+    color for each N and population size
+    """
     plt.figure(figsize=(10, 6))
-    plt.plot(range(len(fitness_progress)), fitness_progress)
-    plt.xlabel('Generation Number')
-    plt.ylabel('Fitness Value')
-    plt.title('Fitness Value vs. Generation')
+
+    for n in sizes:
+        for population_size in population_size_avialable:
+            x_vals = []
+            y_vals = []
+
+            for generations in generations_avialable:
+                conflicts_sum = 0
+                for _ in range(1):
+                    genetic_algorithm = GeneticAlgorithmNQueens(n, population_size, 0.1, generations)
+                    genetic_algorithm.solve()
+                    conflicts_sum += genetic_algorithm.calculate_solution_conflicts()
+
+                conflicts_avg = conflicts_sum / 1
+                x_vals.append(generations)
+                y_vals.append(conflicts_avg)
+
+            plt.plot(x_vals, y_vals, label=f'N={n}, Population Size={population_size}', marker='o')
+
+    plt.xlabel('Number of Generations')
+    plt.ylabel('Average Number of Conflicts')
+    plt.title('Average Number of Conflicts vs. Number of Generations')
+    plt.legend()
     plt.grid(True)
     plt.show()
 
-# Conflicts vs. Iterations (For Min-Conflicts Algorithm Only)
-for n in [8]:  # Example value for demonstration
-    conflicts_progress = measure_conflicts_progress(n)
+
+def plot_running_time_per_n_for_genetic_min_conflicts():
+    ns = range(4, 18)
+    times = []
+
+    for n in ns:
+        print(f"Processing N={n}")
+        running_times_sum = 0
+        for i in range(109):
+            alg = MinConflictsAlgorithm(n, limit_steps=False)
+            start = time.time()
+            alg.solve()
+            end = time.time()
+            running_times_sum += end - start
+
+
+        times.append(running_times_sum)
+
     plt.figure(figsize=(10, 6))
-    plt.plot(range(len(conflicts_progress)), conflicts_progress)
-    plt.xlabel('Iteration Number')
-    plt.ylabel('Number of Conflicts')
-    plt.title('Conflicts vs. Iterations')
+    plt.plot(ns, times, marker='o', linestyle='-', color='b', label='Average Running Time')
+    plt.xlabel('N')
+    plt.ylabel('Average Running Time (seconds)')
+    plt.title('Running Time vs. N for Genetic Min Conflicts Algorithm')
+    plt.legend()
     plt.grid(True)
     plt.show()
+    print(times)
 
-# Memory Usage vs. Number of Queens
-memory_usages = {'Min-Conflicts': [], 'Genetic Algorithm': []}
 
-for n in n_values:
-    min_memory, gen_memory = measure_memory_usage_for_algorithms(n)
-    memory_usages['Min-Conflicts'].append(min_memory)
-    memory_usages['Genetic Algorithm'].append(gen_memory)
 
-plt.figure(figsize=(10, 6))
-plt.plot(n_values, memory_usages['Min-Conflicts'], label='Min-Conflicts Algorithm')
-plt.plot(n_values, memory_usages['Genetic Algorithm'], label='Genetic Algorithm')
-plt.xlabel('Number of Queens (N)')
-plt.ylabel('Memory Usage (MB)')
-plt.title('Memory Usage vs. Number of Queens')
-plt.legend()
-plt.grid(True)
-plt.show()
+def plot_running_time_compare(genetic: dict, min_conflicts: dict, naive_algorithm_dict: dict):
+    "x axis: N, y axis: time, three lines: genetic, min conflicts and naive"
+    fig, ax = plt.subplots()
+    for n in sizes:
+        gen_avg = np.mean([sol.time for sol in genetic[n]])
+        min_avg = np.mean([sol.time for sol in min_conflicts[n]])
+        naive_avg = np.mean([sol.time for sol in naive_algorithm_dict[n]])
+        ax.plot(n, gen_avg, 'ro')
+        ax.plot(n, min_avg, 'bo')
+        ax.plot(n, naive_avg, 'go')
+    ax.set(xlabel='N', ylabel='Time',
+           title='Time compare')
+    ax.grid()
+    plt.show()
 
-# Average Fitness Score vs. Population Size (For Genetic Algorithm)
-average_fitness_scores = measure_population_size_effect(8, population_sizes)  # Example N
 
-plt.figure(figsize=(10, 6))
-plt.plot(population_sizes, average_fitness_scores)
-plt.xlabel('Population Size')
-plt.ylabel('Average Fitness Score')
-plt.title('Average Fitness Score vs. Population Size')
-plt.grid(True)
-plt.show()
+def plot_conflicts_compare(genetic: dict, min_conflicts: dict, naive: dict):
+    "x axis: N, y axis: conflicts, three lines: genetic, min conflicts and naive"
+    fig, ax = plt.subplots()
+    for n in genetic:
+        gen_avg = np.mean([sol.conflicts for sol in genetic[n]])
+        min_avg = np.mean([sol.conflicts for sol in min_conflicts[n]])
+        naive_avg = np.mean([sol.conflicts for sol in naive[n]])
+        ax.plot(n, gen_avg, 'ro')
+        ax.plot(n, min_avg, 'bo')
+        ax.plot(n, naive_avg, 'go')
+    ax.set(xlabel='N', ylabel='Conflicts',
+           title='Conflicts compare')
+    ax.grid()
+    plt.show()
 
-# Convergence Rate Comparison
-measure_convergence_comparison(8)  # Example N
+
+# for n in sizes:
+#     genetic_algorithm_dict[n] = []
+#     min_conflicts_algorithm_dict[n] = []
+#     naive_algorithm_dict[n] = []
+#
+#     for i in range(32 // n):
+#         genetic_algorithm = GeneticAlgorithmNQueens(n, population_size=50, mutation_rate=0.05, max_generations=1000)
+#         start = time.time()
+#         genetic_algorithm.solve()
+#         end = time.time()
+#
+#         genetic_algorithm_dict[n].append(solution(end - start, genetic_algorithm.calculate_solution_conflicts()))
+#
+#         min_conflicts_algorithm = MinConflictsAlgorithm(n)
+#         start = time.time()
+#         min_conflicts_algorithm.solve()
+#         end = time.time()
+#         min_conflicts_algorithm_dict[n].append(solution(end - start, min_conflicts_algorithm.get_all_conflicts()))
+#
+#         naive_algorithm = NaiveAlgorithm(n)
+#         start = time.time()
+#         naive_algorithm.solve()
+#         end = time.time()
+#         naive_algorithm_dict[n].append(solution(end - start, naive_algorithm.get_all_conflicts()))
+#         print("done with N = ", n, " run ", i)
+
+# plot_running_time_compare(genetic_algorithm_dict, min_conflicts_algorithm_dict, naive_algorithm_dict)
+# plot_conflicts_compare(genetic_algorithm_dict, min_conflicts_algorithm_dict, naive_algorithm_dict)
+
+
+# steps_success_plot_for_min_conflicts()
+
+# plot_success_plot_for_genetic_algorithm()
+plot_running_time_per_n_for_genetic_min_conflicts()

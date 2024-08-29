@@ -79,7 +79,5 @@ class Board:
 
 if __name__ == '__main__':
     board = Board(8)
-    if board.solve():
-        board.print_solution()
-    else:
-        print("No solution found.")
+    board.solve()
+

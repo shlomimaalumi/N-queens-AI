@@ -20,17 +20,30 @@ class MinConflictsAlgorithm:
     The running time of the algorithm is O(t * n^3) where t is the number of steps and n is the size of the board.
     """
 
-    max_steps = 1000
-    def __init__(self, n):
+    def_max_steps = 1000
+
+    def __init__(self, n, max_steps=def_max_steps, limit_steps=True):
+        self.limit_steps = limit_steps
+        self.max_steps = max_steps
         self.n = n
         self.board = [[0 for _ in range(n)] for _ in range(n)]
         self.steps = 0
+        self.boards_history = set()
 
     # region conflicts calc
     def get_conflicts(self, row, col):
         """running time is O(n)"""
         return (self.conflicts_per_row(row, col) + self.conflicts_per_col(row, col) +
                 self.conflicts_per_main_diag(row, col) + self.conflicts_per_secondary_diag(row, col))
+
+    def get_all_conflicts(self):
+        """running time is O(n^2)"""
+        conflicts = 0
+        for i in range(self.n):
+            for j in range(self.n):
+                if self.board[i][j] == 1:
+                    conflicts += self.get_conflicts(i, j)
+        return conflicts // 2
 
     def conflicts_per_row(self, row, col):
         count = 0
@@ -70,7 +83,7 @@ class MinConflictsAlgorithm:
 
     # endregion
 
-    def solve(self):
+    def solve(self, max_steps=def_max_steps):
         """running time is O(t * n^3)"""
         self.init_N_queens()
         while not self.termination_criteria():
@@ -79,6 +92,7 @@ class MinConflictsAlgorithm:
             i, j = self.get_best_position()
             self.board[i][j] = 1
             self.steps += 1
+
 
         return
 
@@ -101,7 +115,10 @@ class MinConflictsAlgorithm:
             for j in range(self.n):
                 if self.board[i][j] == 1:
                     conflicts_sum += self.get_conflicts(i, j)
-        return conflicts_sum == 0 or self.steps == MinConflictsAlgorithm.max_steps
+        if self.boards_history.__contains__(str(self.board)):
+            return True
+        self.boards_history.add(str(self.board))
+        return conflicts_sum == 0 or (self.limit_steps and self.steps >= self.max_steps)
 
     def get_most_conflicted_queen(self):
         """running time is O(n^2)"""
@@ -140,12 +157,7 @@ class MinConflictsAlgorithm:
                 print('Q' if self.board[i][j] == 1 else '.', end=' ')
             print()
         print("nuber of steps: ", self.steps)
-        conflicts = 0
-        for i in range(self.n):
-            for j in range(self.n):
-                if self.board[i][j] == 1:
-                    conflicts += self.get_conflicts(i, j)
-        print("nuber of conflicts: ", conflicts / 2)
+        print("number of conflicts: ", self.get_all_conflicts())
 
 
 if __name__ == '__main__':
