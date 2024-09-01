@@ -1,154 +1,68 @@
-import random
 
+
+import random
+import time
 
 class GeneticAlgorithmNQueens:
-    """
-    A class to represent a genetic algorithm for solving the N-Queens problem.
+    def __init__(self, nQSize=8, maxIteration=500000, parentCount=200):
+        self.N = nQSize
+        self.maxIteration = maxIteration
+        self.parents = [[0] * self.N for _ in range(parentCount)]
+        self.fitnessArray = [0] * parentCount
 
-    Attributes:
-    n (int): The number of queens and the size of the board (n x n).
-    population_size (int): The size of the population.
-    mutation_rate (float): The mutation rate.
-    max_generations (int): The maximum number of generations.
-    population (list): The current population of solutions.
-    best_solution (list): The best solution found.
-    generations (int): The number of generations evolved.
-    """
+    def initialise_parents(self):
+        number_set = list(range(self.N))
+        for i in range(len(self.parents)):
+            random.shuffle(number_set)
+            self.parents[i] = number_set[:]
 
-    def __init__(self, n, population_size, mutation_rate, max_generations):
-        """
-        Initializes the genetic algorithm with the given parameters.
+    def calculate_fitness(self, parent):
+        fitness = 0
+        for i in range(self.N):
+            for j in range(i + 1, self.N):
+                if parent[i] == parent[j] or abs(parent[i] - parent[j]) == abs(i - j):
+                    fitness += 1
+        return fitness
 
-        Parameters:
-        n (int): The number of queens and the size of the board (n x n).
-        population_size (int): The size of the population.
-        mutation_rate (float): The mutation rate.
-        max_generations (int): The maximum number of generations.
-        """
-        self.n = n
-        self.population_size = population_size
-        self.mutation_rate = mutation_rate
-        self.max_generations = max_generations
-        self.population = self.init_population()
-        self.best_solution = None
-        self.generations = 0
+    def perform_mutation(self, array):
+        random_index1 = random.randint(0, self.N - 1)
+        random_index2 = random.randint(0, self.N - 1)
+        array[random_index1], array[random_index2] = array[random_index2], array[random_index1]
 
-    def init_population(self):
-        """
-        Initializes the population with random boards.
+    def tournament_selection(self):
+        first_index = random.randint(0, len(self.parents) - 1)
+        second_index = random.randint(0, len(self.parents) - 1)
+        return first_index if self.fitnessArray[first_index] < self.fitnessArray[second_index] else second_index
 
-        Returns:
-        list: A list of random boards.
-        """
-        return [self.random_board() for _ in range(self.population_size)]
+    def parent_selection(self, children, children_fitness):
+        for i in range(len(self.parents)):
+            if self.fitnessArray[i] < 3 or children_fitness[i] < 3:
+                if children_fitness[i] < self.fitnessArray[i]:
+                    self.fitnessArray[i] = children_fitness[i]
+                    self.parents[i] = children[i][:]
+            else:
+                if random.randint(0, 1) == 1 and children_fitness[i] < self.fitnessArray[i]:
+                    self.fitnessArray[i] = children_fitness[i]
+                    self.parents[i] = children[i][:]
 
-    def random_board(self):
-        """
-        Generates a random board configuration.
+    def next_generation(self):
+        children = [[0] * self.N for _ in range(len(self.parents))]
+        children_fitness = [0] * len(self.parents)
 
-        Returns:
-        list: A random board configuration.
-        """
-        return [random.randint(0, self.n - 1) for _ in range(self.n)]
+        for i in range(len(self.parents)):
+            first_parent_index = self.tournament_selection()
+            children[i] = self.parents[first_parent_index][:]
+            self.perform_mutation(children[i])
+            children_fitness[i] = self.calculate_fitness(children[i])
 
-    def fitness(self, board):
-        """
-        Calculates the fitness of a board configuration.
-        when the value is bigger, the board is better.
+        self.parent_selection(children, children_fitness)
 
-        Parameters:
-        board (list): A board configuration.
-
-        Returns:
-        int: The fitness score of the board.
-        """
-        max_pairs = self.n * (self.n - 1) // 2
-        conflicts = 0
-        for i in range(self.n):
-            for j in range(i + 1, self.n):
-                if board[i] == board[j] or abs(board[i] - board[j]) == abs(i - j):
-                    conflicts += 1
-        return max_pairs - conflicts
-
-    def select_parents(self):
-        """
-        Selects two parents from the population using tournament selection.
-
-        Returns:
-        list: A list containing two parent boards.
-        """
-        tournament_size = n // 2 #TODO
-        return [max(random.sample(self.population, tournament_size), key=self.fitness) for _ in range(2)]
-
-    def crossover(self, parent1, parent2):
-        """
-        Performs crossover between two parent boards.
-
-        Parameters:
-        parent1 (list): The first parent board.
-        parent2 (list): The second parent board.
-
-        Returns:
-        list: The child board resulting from the crossover.
-        """
-        crossover_point = random.randint(0, self.n - 1)
-        return parent1[:crossover_point] + parent2[crossover_point:]
-
-    def mutate(self, board):
-        """
-        Mutates a board configuration with a given mutation rate.
-
-        Parameters:
-        board (list): The board configuration to mutate.
-
-        Returns:
-        list: The mutated board configuration.
-        """
-        if random.random() < self.mutation_rate: #TODO plot graph on the mutation rate
-            board[random.randint(0, self.n - 1)] = random.randint(0, self.n - 1)
-        return board
+    def check_for_solution(self):
+        return 0 in self.fitnessArray
 
     def solve(self):
-        """
-        Evolves the population over a number of generations to find the best solution.
-        Running time is O(max_generations * population_size * n).
+        for iteration in range(self.maxIteration):
+            self.next_generation()
+            if self.check_for_solution():
+                return self.parents[self.fitnessArray.index(0)]
 
-        Returns:
-        bool: True if a solution is found, False otherwise.
-        """
-        for generation in range(self.max_generations):
-            new_population = []
-            for _ in range(self.population_size):
-                parent1, parent2 = self.select_parents()
-                child = self.crossover(parent1, parent2)
-                child = self.mutate(child)
-                new_population.append(child)
-
-            self.population = new_population
-            best_board = max(self.population, key=self.fitness)
-            if self.fitness(best_board) == self.n * (self.n - 1) // 2:
-                self.best_solution = best_board
-                self.generations = generation + 1
-                return True
-
-        self.best_solution = max(self.population, key=self.fitness)
-        self.generations = self.max_generations
-        return False
-
-    def calculate_solution_conflicts(self):
-        conflicts = 0
-        for i in range(self.n):
-            for j in range(i + 1, self.n):
-                if self.best_solution[i] == self.best_solution[j] or abs(
-                        self.best_solution[i] - self.best_solution[j]) == abs(i - j):
-                    conflicts += 1
-        return conflicts / 2
-
-
-if __name__ == '__main__':
-    n = 4
-    population_size = 10
-    mutation_rate = 0.1
-    max_generations = 200
-    sol = GeneticAlgorithmNQueens(n, population_size, mutation_rate, max_generations).solve()
-    print(sol.best_solution)
