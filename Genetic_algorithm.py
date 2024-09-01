@@ -1,7 +1,6 @@
-
-
 import random
 import time
+
 
 class GeneticAlgorithmNQueens:
     def __init__(self, nQSize=8, maxIteration=500000, parentCount=200):
@@ -65,4 +64,3 @@ class GeneticAlgorithmNQueens:
             self.next_generation()
             if self.check_for_solution():
                 return self.parents[self.fitnessArray.index(0)]
-
