@@ -1,33 +1,5 @@
-import Board
+from MIN_CONFLICTS_algorithm import min_conflicts_algorithm_results
+from Genetic_algorithm import mutation_rate_vs_success_rate_vs_steps
 
-
-class Game:
-    """represent the game by the n-queens problem"""
-    @staticmethod
-    def conflicts_count_per_index(board, x, y):
-        """count the conflicts for a queen at position (x, y)"""
-        count = 0
-        for i in range(board.size):
-            if i != x and board.get(i, y) == 1:
-                count += 1
-            if i != y and board.get(x, i) == 1:
-                count += 1
-            if 0 <= x + i < board.size and 0 <= y + i < board.size and (x + i, y + i) != (x, y) and board.get(x + i, y + i) == 1:
-                count += 1
-            if 0 <= x - i < board.size and 0 <= y - i < board.size and (x - i, y - i) != (x, y) and board.get(x - i, y - i) == 1:
-                count += 1
-            if 0 <= x + i < board.size and 0 <= y - i < board.size and (x + i, y - i) != (x, y) and board.get(x + i, y - i) == 1:
-                count += 1
-            if 0 <= x - i < board.size and 0 <= y + i < board.size and (x - i, y + i) != (x, y) and board.get(x - i, y + i) == 1:
-                count += 1
-        return count
-
-    @staticmethod
-    def conflicts_count(board):
-        """count the conflicts for all queens"""
-        count = 0
-        for i in range(board.size):
-            for j in range(board.size):
-                if board.get(i, j) == 1:
-                    count += Game.conflicts_count_per_index(board, i, j)
-        return count
+min_conflicts_algorithm_results(list(range(4, 60, 2)))
+mutation_rate_vs_success_rate_vs_steps(list(range(4, 60, 2)), [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])

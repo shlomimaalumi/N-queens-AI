@@ -1,8 +1,17 @@
+import time
+
+from tabulate import tabulate
+
 import math
 import random
+from collections import defaultdict
 from itertools import count
 
 from re import match
+from statistics import median
+
+from matplotlib import pyplot as plt
+from numpy.ma.extras import average
 
 
 class MinConflictsAlgorithm:
@@ -32,52 +41,46 @@ class MinConflictsAlgorithm:
 
     # region conflicts calc
     def get_conflicts(self, row, col):
-        """running time is O(n)"""
-        return (self.conflicts_per_row(row, col) + self.conflicts_per_col(row, col) +
-                self.conflicts_per_main_diag(row, col) + self.conflicts_per_secondary_diag(row, col))
+        """Calculate the number of conflicts for a given cell at (row, col)."""
+        return (self.conflicts_per_row(row, col) +
+                self.conflicts_per_col(row, col) +
+                self.conflicts_per_main_diag(row, col) +
+                self.conflicts_per_secondary_diag(row, col))
 
     def get_all_conflicts(self):
-        """running time is O(n^2)"""
+        """Calculate the total number of conflicts on the board."""
         conflicts = 0
         for i in range(self.n):
             for j in range(self.n):
                 if self.board[i][j] == 1:
                     conflicts += self.get_conflicts(i, j)
-        return conflicts // 2
+        return conflicts // 2  # Each conflict is counted twice, so divide by 2
 
     def conflicts_per_row(self, row, col):
-        count = 0
-        for i in range(self.n):
-            if i != col and self.board[row][i] == 1:
-                count += 1
-        return count
+        """Count conflicts in the same row, excluding the current cell."""
+        return sum(1 for i in range(self.n) if i != col and self.board[row][i] == 1)
 
     def conflicts_per_col(self, row, col):
-        count = 0
-        for i in range(self.n):
-            if i != row and self.board[i][col] == 1:
-                count += 1
-        return count
+        """Count conflicts in the same column, excluding the current cell."""
+        return sum(1 for i in range(self.n) if i != row and self.board[i][col] == 1)
 
     def conflicts_per_main_diag(self, row, col):
+        """Count conflicts in the main diagonal (top-left to bottom-right)."""
         count = 0
-        for i in range(self.n):
-            if 0 <= row + i < self.n and 0 <= col + i < self.n and (row + i, col + i) != (row, col) and \
-                    self.board[row + i][col + i] == 1:
-                count += 1
-            if 0 <= row - i < self.n and 0 <= col - i < self.n and (row - i, col - i) != (row, col) and \
-                    self.board[row - i][col - i] == 1:
+        # Check top-left to bottom-right direction
+        for d in range(-self.n + 1, self.n):
+            r, c = row + d, col + d
+            if 0 <= r < self.n and 0 <= c < self.n and (r, c) != (row, col) and self.board[r][c] == 1:
                 count += 1
         return count
 
     def conflicts_per_secondary_diag(self, row, col):
+        """Count conflicts in the secondary diagonal (top-right to bottom-left)."""
         count = 0
-        for i in range(self.n):
-            if 0 <= row + i < self.n and 0 <= col - i < self.n and (row + i, col - i) != (row, col) and \
-                    self.board[row + i][col - i] == 1:
-                count += 1
-            if 0 <= row - i < self.n and 0 <= col + i < self.n and (row - i, col + i) != (row, col) and \
-                    self.board[row - i][col + i] == 1:
+        # Check top-right to bottom-left direction
+        for d in range(-self.n + 1, self.n):
+            r, c = row + d, col - d
+            if 0 <= r < self.n and 0 <= c < self.n and (r, c) != (row, col) and self.board[r][c] == 1:
                 count += 1
         return count
 
@@ -160,13 +163,43 @@ class MinConflictsAlgorithm:
         print("number of conflicts: ", self.get_all_conflicts())
 
 
-if __name__ == '__main__':
-    count = 0
-    n = 8
-    for i in range(10):
-        min_conflicts = MinConflictsAlgorithm(n)
-        min_conflicts.solve()
-        min_conflicts.print_solution()
-        count += min_conflicts.steps
+def min_conflicts_algorithm_results(ns = [4,6,8]):
+    steps = defaultdict(list)
+    fails = defaultdict(list)
+    running_time = defaultdict(list)
+    runs_per_n1 = 100
 
-    print("average number of steps: ", count / 10)
+    for n in ns:
+        print(n)
+        for i in range(runs_per_n1):
+            alg = MinConflictsAlgorithm(n, 10*n)
+            start = time.time()
+            alg.solve()
+            if alg.get_all_conflicts() == 0:
+                running_time[n].append(time.time() - start)
+                steps[n].append(alg.steps)
+            else:
+                fails[n].append(alg.get_all_conflicts())
+
+    # Prepare data for success rates
+    success_data = []
+    for n, s in steps.items():
+        success_data.append([n, len(s) / runs_per_n1, average(s), median(s), average(running_time[n])])
+    fail_data = []
+    for n, s in fails.items():
+        fail_data.append([n, len(s) / runs_per_n1, average(s), median(s)])
+
+    # Print success rates table
+    print("Success Rates:")
+    print(tabulate(success_data, headers=["N", "Success Rate", "Average Steps", "Median Steps", "running time"], tablefmt="grid"))
+
+    # Print fail rates table
+    print("Fail Rates:")
+    print(tabulate(fail_data, headers=["N", "Fail Rate", "Average Conflicts", "Median Conflicts"], tablefmt="grid"))
+
+print("start")
+min_conflicts_algorithm_results()
+# alg = MinConflictsAlgorithm(20, 100)
+# alg.solve()
+# #print board:
+# alg.print_solution()
