@@ -88,6 +88,35 @@ class GeneticAlgorithmNQueens:
         """
         return [max(random.sample(self.population, self.tournament_size), key=self.fitness) for _ in range(2)]
 
+    def solve(self):
+        """
+        Evolves the population to find a solution to the N-Queens problem.
+        running time is O(max_generations * population_size * n ^ 2)
+
+        Returns:
+        bool: True if a solution is found, False otherwise.
+        """
+        for generation in range(self.max_generations):  # O(max_generations)
+            new_population = []
+            for _ in range(self.population_size):  # O(population_size)
+                parent1, parent2 = self.select_parents()  # O(tournament_size)
+                child = self.crossover(parent1, parent2)  # O(n)
+                child = self.mutate(child)  # O(1)
+                new_population.append(child)
+
+            self.population = new_population
+            best_board = max(self.population, key=self.fitness)  # O(population_size* n^2)
+            if self.fitness(best_board) == self.n * (self.n - 1) // 2:
+                self.best_solution = best_board
+                self.generations = generation + 1
+                return True
+
+        self.best_solution = max(self.population, key=self.fitness)
+        self.generations = self.max_generations
+        return False
+
+
+
     def crossover(self, parent1, parent2):
         """
         Performs crossover between two parent boards.
@@ -116,32 +145,6 @@ class GeneticAlgorithmNQueens:
             board[random.randint(0, self.n - 1)] = random.randint(0, self.n - 1)
         return board
 
-    def solve(self):
-        """
-        Evolves the population to find a solution to the N-Queens problem.
-        running time is O(max_generations * population_size * n ^ 2)
-
-        Returns:
-        bool: True if a solution is found, False otherwise.
-        """
-        for generation in range(self.max_generations):  # O(max_generations)
-            new_population = []
-            for _ in range(self.population_size):  # O(population_size)
-                parent1, parent2 = self.select_parents()  # O(tournament_size)
-                child = self.crossover(parent1, parent2)  # O(n)
-                child = self.mutate(child)  # O(1)
-                new_population.append(child)
-
-            self.population = new_population
-            best_board = max(self.population, key=self.fitness)  # O(population_size* n^2)
-            if self.fitness(best_board) == self.n * (self.n - 1) // 2:
-                self.best_solution = best_board
-                self.generations = generation + 1
-                return True
-
-        self.best_solution = max(self.population, key=self.fitness)
-        self.generations = self.max_generations
-        return False
 
     def calculate_solution_conflicts(self):
         conflicts = 0
@@ -251,5 +254,5 @@ def mutation_rate_vs_success_rate_vs_steps(sizes=[4, 6, 8, ], mutation_rates=[0.
 #     print(tabulate(fail_data, headers=["N", "Fail Rate", "Average Conflicts", "Median Conflicts"], tablefmt="grid"))
 
 
-print("start")
-mutation_rate_vs_success_rate_vs_steps()
+# print("start")
+# mutation_rate_vs_success_rate_vs_steps()
