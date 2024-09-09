@@ -19,7 +19,7 @@ running time complexity: O(t * n^3), where t is the number of steps and n is the
 Evaluation To evaluate the quality of our solution, we measure the following: The average, median number of steps required to find a valid solution. The percentage of successful runs that result in a valid solution within the step limit.  Run-time efficiency as board size increases. average Number of conflicts in un-success termination.
 
 """
-
+import csv
 import time
 
 from tabulate import tabulate
@@ -193,7 +193,7 @@ def min_conflicts_algorithm_results(ns=[4, 6, 8]):
     step_to_best = defaultdict(list)
     fails = defaultdict(list)
     running_time = defaultdict(list)
-    runs_per_n1 = 100
+    runs_per_n1 = 17
 
     for n in ns:
         print(n)
@@ -228,10 +228,3 @@ def min_conflicts_algorithm_results(ns=[4, 6, 8]):
     print(tabulate(combined_data,
                    headers=["N", "Success Rate", "Average Steps", "Median Steps", "Running Time", "Fail Rate",
                             "Average Conflicts", "Median Conflicts", "Average Steps to Best"], tablefmt="grid"))
-
-# print("start")
-# min_conflicts_algorithm_results()
-# alg = MinConflictsAlgorithm(20, 100)
-# alg.solve()
-# #print board:
-# alg.print_solution()

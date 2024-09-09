@@ -221,9 +221,11 @@ def plot_step_to_success_min_conflicts():
 # plot_mutation_rate_vs_n()
 
 
-print("start")
-# min_conflicts_algorithm_results()
-alg = MinConflictsAlgorithm(24, 100)
-alg.solve()
-#print board:
-alg.print_solution()
+#run all the plots:
+plot_time_vs_n()
+plot_mutation_rate_vs_n()
+plot_time_vs_max_steps()
+plot_time_vs_max_generations()
+plot_min_conflict_success_rate()
+plt_avarege_running_time_of_min_conflicts()
+plot_step_to_success_min_conflicts()
