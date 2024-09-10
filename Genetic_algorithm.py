@@ -15,7 +15,7 @@ class GeneticAlgorithmNQueens:
     generations (int): The number of generations evolved.
     """
 
-    def __init__(self, n, population_size, mutation_rate, max_generations):
+    def __init__(self, n, population_size=0, mutation_rate=0, max_generations=0):
         """
         Initializes the genetic algorithm with the given parameters.
 
@@ -26,9 +26,9 @@ class GeneticAlgorithmNQueens:
         max_generations (int): The maximum number of generations.
         """
         self.n = n
-        self.population_size = population_size
-        self.mutation_rate = mutation_rate
-        self.max_generations = max_generations
+        self.population_size = population_size if population_size != 0 else max(10, n)
+        self.mutation_rate = mutation_rate if mutation_rate != 0 else 0.5
+        self.max_generations = max_generations if max_generations != 0 else 50 * (n ** 2)
         self.population = self.init_population()
         self.best_solution = None
         self.generations = 0
