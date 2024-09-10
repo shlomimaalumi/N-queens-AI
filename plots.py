@@ -1,20 +1,11 @@
 import threading
-
-import matplotlib.pyplot as plt
-from collections import defaultdict
 import time
 from collections import defaultdict
-
 import matplotlib.pyplot as plt
-import time
-import random
 import numpy as np
-import psutil
-
-from Genetic_algorithm import GeneticAlgorithmNQueens
-# from Genetic_algorithm import NQueensGenetic
-from MIN_CONFLICTS_algorithm import MinConflictsAlgorithm
 import Genetic_algorithm
+from Genetic_algorithm import GeneticAlgorithmNQueens
+from MIN_CONFLICTS_algorithm import MinConflictsAlgorithm
 from naive_algorithm import NaiveAlgorithm
 
 sizes = [4, 6, 10, 13]
@@ -216,16 +207,15 @@ def plot_step_to_success_min_conflicts():
     plt.show()
 
 
-
-# print("start")
+# plot_time_vs_n()
 # plot_mutation_rate_vs_n()
+# plot_time_vs_max_steps()
+# plot_time_vs_max_generations()
+# plot_min_conflict_success_rate()
+# plt_avarege_running_time_of_min_conflicts()
+# plot_step_to_success_min_conflicts()
 
-
-#run all the plots:
-plot_time_vs_n()
-plot_mutation_rate_vs_n()
-plot_time_vs_max_steps()
-plot_time_vs_max_generations()
-plot_min_conflict_success_rate()
-plt_avarege_running_time_of_min_conflicts()
-plot_step_to_success_min_conflicts()
+N = 16
+start = time.time()
+NaiveAlgorithm(N).solve()
+print(f"Naive algorithm took {time.time() - start} seconds")

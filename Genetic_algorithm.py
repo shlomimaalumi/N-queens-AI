@@ -1,12 +1,3 @@
-from statistics import mean, median
-from collections import defaultdict
-from time import time
-from statistics import mean, median
-from collections import defaultdict
-from time import time
-
-import numpy as np
-from tabulate import tabulate
 import random
 
 
@@ -115,8 +106,6 @@ class GeneticAlgorithmNQueens:
         self.generations = self.max_generations
         return False
 
-
-
     def crossover(self, parent1, parent2):
         """
         Performs crossover between two parent boards.
@@ -145,7 +134,6 @@ class GeneticAlgorithmNQueens:
             board[random.randint(0, self.n - 1)] = random.randint(0, self.n - 1)
         return board
 
-
     def calculate_solution_conflicts(self):
         conflicts = 0
         for i in range(self.n):
@@ -154,105 +142,3 @@ class GeneticAlgorithmNQueens:
                         self.best_solution[i] - self.best_solution[j]) == abs(i - j):
                     conflicts += 1
         return conflicts // 2
-
-
-def mutation_rate_vs_success_rate_vs_steps(sizes=[4, 6, 8, ], mutation_rates=[0.1, 0.2, 0.7, 1]):
-    success_rates = defaultdict(list)
-    steps_data = defaultdict(list)
-    running_times_data = defaultdict(list)
-    fail_data = defaultdict(list)
-
-    for n in sizes:
-        print(n)
-        for mutation_rate in mutation_rates:
-            iterations = 2
-            running_times = []
-            steps = []
-            conflicts = []
-            success = 0
-            for i in range(iterations):
-                alg = GeneticAlgorithmNQueens(n, max(10, n), mutation_rate, 1000 * n ** 2)
-                start = time()
-                alg.solve()
-                if alg.calculate_solution_conflicts() == 0:
-                    success += 1
-                    running_times.append(time() - start)
-                    steps.append(alg.generations)
-                else:
-                    conflicts.append(alg.calculate_solution_conflicts())
-
-            success_rates[(n, mutation_rate)].append(success / iterations)
-
-            # Calculate steps and running time
-            steps_data[(n, mutation_rate)].append((mean(steps) if steps else 0, median(steps) if steps else 0))
-            running_times_data[(n, mutation_rate)].append(mean(running_times) if running_times else 0)
-
-            # Check for conflicts before calculating stats
-            if conflicts:
-                fail_data[(n, mutation_rate)].append((mean(conflicts), median(conflicts)))
-            else:
-                fail_data[(n, mutation_rate)].append((0, 0))  # No conflicts, so set mean and median to 0
-
-    success_table = []
-    fail_table = []
-
-    for (n, mutation_rate), success_rate in success_rates.items():
-        success_table.append([n, mutation_rate, success_rate[0], steps_data[(n, mutation_rate)][0][0],
-                              steps_data[(n, mutation_rate)][0][1], running_times_data[(n, mutation_rate)][0]])
-
-    for (n, mutation_rate), fail_stats in fail_data.items():
-        fail_table.append(
-            [n, mutation_rate, 1 - success_rates[(n, mutation_rate)][0], fail_stats[0][0], fail_stats[0][1]])
-
-    print("Success Rates:")
-    print(tabulate(success_table, headers=["N", "Mutation Rate", "Success Rate", "Average Steps", "Median Steps",
-                                           "Average Running Time"], tablefmt="grid"))
-
-    print("Fail Rates:")
-    print(tabulate(fail_table, headers=["N", "Mutation Rate", "Fail Rate", "Average Conflicts", "Median Conflicts"],
-                   tablefmt="grid"))
-
-
-#
-#
-# def min_conflicts_algorithm_results():
-#     steps = defaultdict(list)
-#     fails = defaultdict(list)
-#     running_time = defaultdict(list)
-#     runs_per_n1 = 100
-#
-#     for n in [4, 6, 8, 10, 12, 16, 20, 24, 28, 32, 40, 52, 64]:
-#         print(n)
-#         for i in range(runs_per_n1):
-#             population_size = max(10 , n)
-#             alg = GeneticAlgorithmNQueens(n, population_size, 0.1, 1000)
-#             start = time()
-#             alg.solve()
-#             if alg.get_all_conflicts() == 0:
-#                 running_time[n].append(time.time() - start)
-#                 steps[n].append(alg.steps)
-#             else:
-#                 fails[n].append(alg.get_all_conflicts())
-#
-#     # Prepare data for success rates
-#     success_data = []
-#     for n, s in steps.items():
-#         success_data.append([n, len(s) / runs_per_n1, average(s), median(s), average(running_time[n])])
-#
-#     # Prepare data for fail rates
-#     fail_data = []
-#     for n, s in fails.items():
-#         fail_data.append([n, len(s) / runs_per_n1, average(s), median(s)])
-#
-#     # Print success rates table
-#     print("Success Rates:")
-#     print(tabulate(success_data, headers=["N", "Success Rate", "Average Steps", "Median Steps, running time"],
-#                    tablefmt="grid"))
-#
-#     # Print fail rates table
-#     print("Fail Rates:")
-#     print(tabulate(fail_data, headers=["N", "Fail Rate", "Average Conflicts", "Median Conflicts"], tablefmt="grid"))
-
-
-# print("start")
-# mutation_rate_vs_success_rate_vs_steps()

@@ -1,39 +1,10 @@
-""""
-Min-Conflict
-To solve the N-Queens problem, we implemented a hybrid approach combining the Min-Conflicts Heuristic with elements of local search. Our algorithm iteratively adjusts the positions of queens on an N x N chessboard, aiming to minimize conflicts (queen attacks) until a valid solution is found or a preset limit of steps is reached. This method leverages the strength of the Min-Conflicts Heuristic to efficiently navigate large search spaces in a good running time complexity.
-Model Description The algorithm follows these steps:
-Initialization: We randomly place N queens on the board. This random placement serves as the starting point for the algorithm.
-Conflict Resolution Loop: The algorithm identifies the most conflicted queen, i.e., the queen in the position where the most attacks occur. The queen is then removed from its position and relocated to the best position in its column, where it has the fewest conflicts. This process repeats iteratively until either: A solution is found with zero conflicts, or A maximum number of steps is reached. Termination: The algorithm stops if all conflicts are resolved, or the step limit is reached, at which point the solution is either valid or failed.
-Assumptions Random Initial Placement: We assume that starting with a randomly generated board configuration gives enough diversity to explore the solution space effectively.
-Local Conflict Minimization: We assume that making greedy choices (moving the most conflicted queen to a better position) can lead to a global solution or minimize conflicts.
-Step Limit: The algorithm assumes that if a solution is not found within a certain number of steps (exact number will be selected after result research), the current configuration is unlikely to lead to a valid solution without starting over.
-
-Success Criteria The success of the algorithm is determined by the following:
-Conflict-Free Solution: The ultimate goal is to position all queens such that no two queens threaten each other, which is a state of zero conflicts.
-Efficiency: The algorithm is considered successful if it consistently finds a solution within the preset step limit, minimizing the number of steps taken.
-Scalability: The ability to maintain solution quality and computational efficiency as n increases (i.e., for larger board sizes) is a key measure of success.
-Key Features of the Algorithm The core of the algorithm is the conflict evaluation function, which computes the total number of attacks for each queen based on its row, column, and diagonals. This function runs in O(n) time for each queen, making it efficient for large boards.
-Most Conflicted Queen Selection: At each step, the algorithm identifies the queen with the highest number of conflicts, ensuring that the biggest problem areas are addressed first. This step runs in O(n²) time.
-Best Position Search: After removing a conflicted queen, the algorithm searches for the position in the same column that minimizes conflicts. This step runs in O(n³) time for each iteration, as we are checking each cell for its conflict value.
-running time complexity: O(t * n^3), where t is the number of steps and n is the size of the board.
-Evaluation To evaluate the quality of our solution, we measure the following: The average, median number of steps required to find a valid solution. The percentage of successful runs that result in a valid solution within the step limit.  Run-time efficiency as board size increases. average Number of conflicts in un-success termination.
-
-"""
-import csv
-import time
-
-from tabulate import tabulate
-
 import math
 import random
+import time
 from collections import defaultdict
-from itertools import count
-
-from re import match
 from statistics import median
-
-from matplotlib import pyplot as plt
 from numpy.ma.extras import average
+from tabulate import tabulate
 
 
 class MinConflictsAlgorithm:
