@@ -1,75 +1,55 @@
 import argparse
-from naive_algorithm import NaiveAlgorithm
-from MIN_CONFLICTS_algorithm import MinConflictsAlgorithm
-from mutation_rate_fit import MutationRateFit
-from Genetic_algorithm import GeneticAlgorithm
+import time
+
+from NaiveAlgorithm import NaiveAlgorithm as NaiveAlgorithmNQueens
+from MinConflictsAlgorithm import MinConflictsAlgorithm as MinConflictsAlgorithmNQueens
+from GeneticAlgorithm import GeneticAlgorithm as GeneticAlgorithmNQueens
 
 
-def run_naive_algorithm():
-    print("Running Naive Algorithm...")
-    algo = NaiveAlgorithm()
-    algo.run()
-    print("Naive Algorithm finished.")
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Run N-Queens solver with different algorithms.")
+    parser.add_argument("-Alg_Name", choices=["Naive", "MinConflicts", "GA"], required=True,
+                        help="Algorithm to use for solving N-Queens.")
+    parser.add_argument("-N", type=int, required=True, help="Size of the N-Queens board (N value).")
+    return parser.parse_args()
 
 
-def run_min_conflicts_algorithm():
-    print("Running Min Conflicts Algorithm...")
-    algo = MinConflictsAlgorithm()
-    algo.run()
-    print("Min Conflicts Algorithm finished.")
+def run_naive_algorithm(n):
+    solver = NaiveAlgorithmNQueens(n)
+    solver.solve()
+    print(f"Naive Algorithm solution for {n}-Queens:")
+    solver.print_solution()
 
 
-def run_genetic_algorithm():
-    print("Running Genetic Algorithm...")
-    algo = GeneticAlgorithm()
-    algo.run()
-    print("Genetic Algorithm finished.")
+def run_min_conflicts_algorithm(n):
+    solver = MinConflictsAlgorithmNQueens(n)
+    solver.solve()
+    print(f"Min-Conflicts Algorithm solution for {n}-Queens:")
+    solver.print_solution()
 
 
-def run_mutation_rate_fit():
-    print("Running Mutation Rate Fit...")
-    mutation_rate_fitter = MutationRateFit()
-    mutation_rate_fitter.run()
-    print("Mutation Rate Fitting finished.")
+def run_genetic_algorithm(n):
+    solver = GeneticAlgorithmNQueens(n)
+    solver.solve()
+    print(f"Genetic Algorithm solution for {n}-Queens:")
+    solver.print_solution()
 
 
-def run_predict_best_mutation_rate():
-    print("Running Adaptive Mutation Rate...")
-    mutation_rate_fitter = MutationRateFit()
-    best_rate = mutation_rate_fitter.predict_best_mutation_rate()
-    print(f"Best Mutation Rate Predicted: {best_rate}")
+def main():
+    args = parse_arguments()
+    n = args.N
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run different algorithms.")
-
-    parser.add_argument(
-        "--naive", action="store_true", help="Run Naive Algorithm."
-    )
-    parser.add_argument(
-        "--min-conflicts", action="store_true", help="Run Min Conflicts Algorithm."
-    )
-    parser.add_argument(
-        "--genetic", action="store_true", help="Run Genetic Algorithm."
-    )
-    parser.add_argument(
-        "--mutation-fit", action="store_true", help="Run Mutation Rate Fit."
-    )
-    parser.add_argument(
-        "--adaptive-mutation", action="store_true", help="Run Adaptive Mutation Rate Prediction."
-    )
-
-    args = parser.parse_args()
-
-    if args.naive:
-        run_naive_algorithm()
-    elif args.min_conflicts:
-        run_min_conflicts_algorithm()
-    elif args.genetic:
-        run_genetic_algorithm()
-    elif args.mutation_fit:
-        run_mutation_rate_fit()
-    elif args.adaptive_mutation:
-        run_predict_best_mutation_rate()
+    if args.Alg_Name == "Naive":
+        run_naive_algorithm(n)
+    elif args.Alg_Name == "MinConflicts":
+        run_min_conflicts_algorithm(n)
+    elif args.Alg_Name == "GA":
+        run_genetic_algorithm(n)
     else:
-        print("Please specify an operation to run. Use --help for more information.")
+        print(f"Unknown algorithm {args.Alg_Name}")
+
+
+if __name__ == '__main__':
+    start = time.time()
+    main()
+    print(f"Execution time: {time.time() - start:.8f} seconds.")
